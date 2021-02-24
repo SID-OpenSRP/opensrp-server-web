@@ -4,6 +4,8 @@ target/
 .settings/
 .DS_Store
 .idea/
+bin
+.factorypath
 *.iml
 *.ipr
 *.iws
