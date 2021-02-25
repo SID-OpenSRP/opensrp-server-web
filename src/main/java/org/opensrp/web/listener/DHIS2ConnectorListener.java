@@ -26,11 +26,9 @@ public class DHIS2ConnectorListener {
 		Calendar c = Calendar.getInstance();
 		if (c.get(Calendar.DATE) == c.getActualMaximum(Calendar.DATE)) {
 			JSONObject aggregatedDataSet = null;
-			String message = "";
 			try {
 				aggregatedDataSet = dHIS2AggregateConnector.getAggregatedDataCount();
 				dHIS2AggregateConnector.aggredateDataSendToDHIS2(aggregatedDataSet);
-				message = aggregatedDataSet.toString();
 				System.out.println("Aggregated data send to DHIS2..." + aggregatedDataSet.toString());
 				
 			}
