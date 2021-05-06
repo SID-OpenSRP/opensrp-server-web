@@ -47,6 +47,8 @@ import org.apache.commons.io.FileUtils;
 import com.google.gson.JsonArray;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 import org.json.JSONObject;
 import org.opensrp.api.domain.User;
@@ -65,8 +67,6 @@ import org.opensrp.web.bean.SyncParam;
 import org.opensrp.web.config.Role;
 import org.opensrp.web.utils.MaskingUtils;
 import org.opensrp.web.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.smartregister.domain.Client;
 import org.smartregister.domain.Event;
 import org.opensrp.domain.Multimedia;
@@ -97,7 +97,7 @@ import com.google.gson.reflect.TypeToken;
 @RequestMapping(value = "/rest/event")
 public class EventResource extends RestResource<Event> {
 	
-	private static Logger logger = LoggerFactory.getLogger(EventResource.class.toString());
+	private static Logger logger = LogManager.getLogger(EventResource.class.toString());
 
 	private EventService eventService;
 	
@@ -604,6 +604,7 @@ public class EventResource extends RestResource<Event> {
 
 		try {
 			String tempDirectory = System.getProperty("java.io.tmpdir");
+			logger.info("Temp DIR is ============="+tempDirectory);
 			for (String eventType : eventTypes) {
 				ExportEventDataSummary exportEventDataSummary = eventService
 						.exportEventData(planIdentifier, eventType, Utils.getDateTimeFromString(fromDate),
@@ -626,11 +627,11 @@ public class EventResource extends RestResource<Event> {
 
 				exportDataFileName = SAMPLE_CSV_FILE + missionName + "_" + eventTypeName + "_" + formatted + ".csv";
 
-				csvFile = new File(exportDataFileName);
+				csvFile = new File(tempDirectory,exportDataFileName);
 				if (exportEventDataSummary != null) {
-					generateCSV(exportEventDataSummary, csvFile.getName());
+					generateCSV(exportEventDataSummary, csvFile.getAbsolutePath());
 				}
-				writeToZipFile(csvFile.getName(), zipOS, null);
+				writeToZipFile(csvFile.getName(), zipOS, csvFile.getAbsolutePath());
 				firstTime = false;
 
 				Boolean firstTimeForImages = true;
@@ -674,6 +675,7 @@ public class EventResource extends RestResource<Event> {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 		String formatted = "";
 		boolean firstTime = firstTimeForImages;
+		String tempDirectory = System.getProperty("java.io.tmpdir");
 		if (eventType.equals("flag_problem")) {
 
 			ExportImagesSummary exportImagesSummary =
@@ -683,7 +685,7 @@ public class EventResource extends RestResource<Event> {
 			if (firstTime) {
 				formatted = df.format(new Date());
 				imagesDirectoryName = SAMPLE_CSV_FILE + missionName + "_Flag_Problem_Photos_" + formatted;
-				imagesDirectory = new File(imagesDirectoryName + "/");
+				imagesDirectory = new File(tempDirectory, imagesDirectoryName + "/");
 				imagesDirectory.mkdirs();
 				firstTime = false;
 			}
@@ -713,7 +715,7 @@ public class EventResource extends RestResource<Event> {
 								.getStockId() + extension);
 				if (file != null) {
 					FileUtils.copyFile(file, childFile);
-					writeToZipFile(null, zipOS, childFile.getPath());
+					writeToZipFile(childFile.getName(), zipOS, childFile.getAbsolutePath());
 				}
 			}
 
